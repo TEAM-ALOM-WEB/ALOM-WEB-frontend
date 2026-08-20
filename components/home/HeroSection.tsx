@@ -3,25 +3,24 @@ import Image from "next/image";
 export default function HeroSection() {
   return (
     <section className="relative w-full min-h-screen flex flex-col items-center justify-center bg-[#08090d] text-white overflow-hidden px-4 sm:px-6">
-      {/* 1. heroBg.jpg 배경 이미지 (풀스크린 커버) */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 flex items-center justify-center">
-        <div className="relative w-[150vmax] h-[150vmax] flex-shrink-0">
-          <Image
-            src="/images/heroBg.jpg"
-            alt="ALOM Hero Background"
-            fill
-            priority
-            sizes="100vw"
-            className="object-cover -rotate-90 origin-center opacity-70"
-          />
-        </div>
-        {/* 상하단 부드러운 그라디언트 오버레이 */}
-        <div className="absolute inset-0 bg-gradient-to-b from-[#08090d]/40 via-transparent to-[#08090d]/80" />
+      {/* 1. heroBg.jpg 별빛 배경 이미지 (본래 고화질 해상도 유지 및 선명한 커버) */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <Image
+          src="/images/heroBg.jpg"
+          alt="ALOM Hero Starry Background"
+          fill
+          priority
+          quality={100}
+          unoptimized
+          className="object-cover opacity-80"
+        />
+        {/* 상하단 및 전체 은은한 다크 그라디언트 비네팅 */}
+        <div className="absolute inset-0 bg-gradient-to-b from-[#08090d]/60 via-transparent to-[#08090d]/90" />
       </div>
 
       {/* 2. BOAZ 스타일 유기적 앰비언트 그라디언트 컨테이너 (bg-gradients-container) */}
       <div
-        className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center overflow-hidden [filter:blur(70px)] opacity-70"
+        className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center overflow-hidden [filter:blur(70px)] opacity-65"
         aria-hidden="true"
       >
         <div className="relative w-[500px] h-[500px] sm:w-[800px] sm:h-[800px]">

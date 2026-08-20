@@ -40,11 +40,10 @@ export default function Header() {
 
   return (
     <header
-      className={`fixed top-0 inset-x-0 z-50 w-full transition-all duration-200 ${
-        isScrolled || isMobileMenuOpen
+      className={`fixed top-0 inset-x-0 z-50 w-full transition-all duration-200 ${isScrolled || isMobileMenuOpen
           ? "bg-[#08090d]/80 backdrop-blur-md border-b border-white/10"
           : "bg-transparent border-b border-transparent"
-      }`}
+        }`}
     >
       <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-12">
         <div className="flex items-center justify-between h-20 sm:h-24">
@@ -58,10 +57,10 @@ export default function Header() {
             <Image
               src="/images/alom_logo2_copy.png"
               alt="ALOM Logo"
-              width={140}
-              height={40}
+              width={210}
+              height={60}
               priority
-              className="h-7 sm:h-8 w-auto object-contain"
+              className="h-10 sm:h-12 w-auto object-contain"
             />
           </Link>
 
@@ -80,11 +79,10 @@ export default function Header() {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`text-sm lg:text-base font-medium tracking-tight transition-colors duration-150 ${
-                    isActive
+                  className={`text-sm lg:text-base font-medium tracking-tight transition-colors duration-150 ${isActive
                       ? "text-white font-semibold"
                       : "text-neutral-300 hover:text-white"
-                  }`}
+                    }`}
                 >
                   {item.label}
                 </Link>
@@ -126,11 +124,10 @@ export default function Header() {
                   key={item.href}
                   href={item.href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className={`px-4 py-3 rounded-lg text-lg font-medium transition-colors ${
-                    isActive
+                  className={`px-4 py-3 rounded-lg text-lg font-medium transition-colors ${isActive
                       ? "bg-white/10 text-white font-semibold"
                       : "text-neutral-300 hover:bg-white/5 hover:text-white"
-                  }`}
+                    }`}
                 >
                   {item.label}
                 </Link>
