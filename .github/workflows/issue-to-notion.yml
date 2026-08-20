@@ -28,9 +28,23 @@ jobs:
           ISSUE_URL: ${{ github.event.issue.html_url }}
         run: |
           set -euo pipefail
+
+          # 1. 시크릿 값 검증 및 공백/개행문자(\r\n) 제거
+          if [ -z "${NOTION_TOKEN:-}" ]; then
+            echo "❌ ERROR: NOTION_API_KEY 시크릿이 비어있습니다. GitHub Secrets를 확인해주세요."
+            exit 1
+          fi
+          if [ -z "${NOTION_DATABASE_ID:-}" ]; then
+            echo "❌ ERROR: NOTION_DATABASE_ID 시크릿이 비어있습니다. GitHub Secrets를 확인해주세요."
+            exit 1
+          fi
+
+          NOTION_TOKEN=$(echo -n "${NOTION_TOKEN}" | tr -d '\r\n ')
+          NOTION_DATABASE_ID=$(echo -n "${NOTION_DATABASE_ID}" | tr -d '\r\n ')
+
           echo "새 이슈 생성됨: #${ISSUE_NUMBER} ${ISSUE_TITLE}"
 
-          # 이슈 제목에서 타입(Feat, Fix, Chore, Docs, Refactor) 추출
+          # 2. 이슈 제목에서 타입(Feat, Fix, Chore, Docs, Refactor) 추출
           UPPER_TITLE=$(echo "${ISSUE_TITLE}" | tr '[:lower:]' '[:upper:]')
           ISSUE_TYPE=""
           if [[ "${UPPER_TITLE}" =~ ^\[FEAT\] ]]; then
@@ -47,7 +61,7 @@ jobs:
 
           echo "추출된 타입: ${ISSUE_TYPE:-없음}"
 
-          # 노션 페이지 생성 페이로드 구성
+          # 3. 노션 페이지 생성 페이로드 구성
           if [ -n "${ISSUE_TYPE}" ]; then
             PAYLOAD=$(jq -n \
               --arg db_id "$NOTION_DATABASE_ID" \
@@ -100,10 +114,11 @@ jobs:
               }')
           fi
 
+          # 4. 노션 API 호출 (Notion-Version을 첫 번째 헤더로 전송)
           HTTP_CODE=$(curl -sS -o /tmp/notion_create.json -w "%{http_code}" \
             -X POST "https://api.notion.com/v1/pages" \
-            -H "Authorization: Bearer ${NOTION_TOKEN}" \
             -H "Notion-Version: 2022-06-28" \
+            -H "Authorization: Bearer ${NOTION_TOKEN}" \
             -H "Content-Type: application/json" \
             -d "$PAYLOAD")
 
@@ -130,8 +145,8 @@ jobs:
                 }')
               HTTP_CODE=$(curl -sS -o /tmp/notion_create_retry.json -w "%{http_code}" \
                 -X POST "https://api.notion.com/v1/pages" \
-                -H "Authorization: Bearer ${NOTION_TOKEN}" \
                 -H "Notion-Version: 2022-06-28" \
+                -H "Authorization: Bearer ${NOTION_TOKEN}" \
                 -H "Content-Type: application/json" \
                 -d "$FALLBACK_PAYLOAD")
 
@@ -145,5 +160,5 @@ jobs:
             fi
           fi
 
-          echo "노션 일감 생성 완료 (상태: 시작전)"
+          echo "✅ 노션 일감 생성 완료 (상태: 시작전)"
           cat /tmp/notion_create.json || cat /tmp/notion_create_retry.json
