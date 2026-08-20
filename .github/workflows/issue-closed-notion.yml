@@ -1,17 +1,5 @@
 # 이슈가 닫히거나 다시 열릴 때 Notion DB 행의 상태를 업데이트합니다.
 #
-#  이슈 생성 (issues.opened)
-#      └→ [시작전]                  (issue-to-notion.yml)
-#
-#  수동 노션 변경
-#      └→ [진행중]                  (수동)
-#
-#  PR 오픈 (pull_request.opened)
-#      └→ [리뷰중] + PR URL 갱신   (pr-update-notion.yml)
-#
-#  PR 머지 (pull_request.closed + merged)
-#      └→ [완료] + PR URL 갱신     (pr-merged-notion.yml)
-#
 #  이슈 close - not_planned (issues.closed)
 #      └→ [취소됨]                 (issue-closed-notion.yml ← 이 파일)
 #
@@ -19,12 +7,8 @@
 #      현재 "완료"  →  skip
 #      아니면       →  [완료]       (issue-closed-notion.yml ← 이 파일)
 #
-#  이슈 close - 그 외 null
-#      └→ skip                     (issue-closed-notion.yml ← 이 파일)
-#
 #  이슈 reopen (issues.reopened)
 #      현재 "취소됨"  →  [시작전]  (issue-closed-notion.yml ← 이 파일)
-#      그 외          →  skip
 #
 # GitHub Secrets: NOTION_API_KEY, NOTION_DATABASE_ID
 
@@ -50,95 +34,102 @@ jobs:
           ISSUE_ACTION: ${{ github.event.action }}
           STATE_REASON: ${{ github.event.issue.state_reason }}
         run: |
-          set -euo pipefail
+          node -e '
+          async function run() {
+            const token = (process.env.NOTION_TOKEN || "").trim();
+            const databaseId = (process.env.NOTION_DATABASE_ID || "").trim();
+            const issueNumber = parseInt(process.env.ISSUE_NUMBER, 10);
+            const issueAction = process.env.ISSUE_ACTION || "";
+            const stateReason = process.env.STATE_REASON || "";
 
-          if [ -z "${NOTION_TOKEN:-}" ] || [ -z "${NOTION_DATABASE_ID:-}" ]; then
-            echo "❌ ERROR: NOTION_API_KEY 또는 NOTION_DATABASE_ID 시크릿이 비어있습니다."
-            exit 1
-          fi
+            if (!token || !databaseId) {
+              console.error("❌ ERROR: NOTION_API_KEY 또는 NOTION_DATABASE_ID 시크릿이 비어있습니다.");
+              process.exit(1);
+            }
 
-          NOTION_TOKEN=$(echo -n "${NOTION_TOKEN}" | tr -d '\r\n ')
-          NOTION_DATABASE_ID=$(echo -n "${NOTION_DATABASE_ID}" | tr -d '\r\n ')
+            console.log(`action: ${issueAction}, state_reason: ${stateReason}`);
 
-          echo "action: ${ISSUE_ACTION}, state_reason: ${STATE_REASON}"
+            if (issueAction !== "reopened" && stateReason !== "not_planned" && stateReason !== "completed") {
+              console.log("state_reason이 not_planned / completed 가 아니므로 skip합니다.");
+              return;
+            }
 
-          # closed가 아닌 reopened인 경우 바로 reopen 처리로 이동
-          if [ "${ISSUE_ACTION}" = "reopened" ]; then
-            HANDLE_REOPEN=true
-          else
-            HANDLE_REOPEN=false
-            # closed: not_planned / completed 이외는 skip
-            if [ "${STATE_REASON}" != "not_planned" ] && [ "${STATE_REASON}" != "completed" ]; then
-              echo "state_reason이 not_planned / completed 가 아니므로 skip합니다."
-              exit 0
-            fi
-          fi
+            // 1. 노션 행 검색
+            const queryRes = await fetch(`https://api.notion.com/v1/databases/${databaseId}/query`, {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${token}`,
+                "Notion-Version": "2022-06-28",
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                filter: {
+                  property: "Github 이슈 번호",
+                  number: { equals: issueNumber }
+                }
+              })
+            });
 
-          # 이슈 번호로 노션 행 검색
-          QUERY_JSON=$(jq -n \
-            --argjson number "$ISSUE_NUMBER" \
-            '{
-              filter: {
-                property: "Github 이슈 번호",
-                number: { equals: $number }
+            const queryData = await queryRes.json();
+            if (!queryRes.ok) {
+              console.error("❌ 노션 검색 실패:", JSON.stringify(queryData, null, 2));
+              process.exit(1);
+            }
+
+            const page = queryData.results && queryData.results[0];
+            if (!page) {
+              console.log(`노션에서 이슈 #${issueNumber}에 해당하는 행을 찾을 수 없습니다. skip합니다.`);
+              return;
+            }
+
+            const pageId = page.id;
+            const currentStatus = page.properties["상태"]?.status?.name || "";
+            console.log(`노션 페이지 ID: ${pageId}, 현재 상태: ${currentStatus}`);
+
+            let newStatus = "";
+            if (issueAction === "reopened") {
+              if (currentStatus !== "취소됨") {
+                console.log("현재 상태가 \"취소됨\"이 아니므로 skip합니다.");
+                return;
               }
-            }')
-          QUERY_RESPONSE=$(curl -sS \
-            -X POST "https://api.notion.com/v1/databases/${NOTION_DATABASE_ID}/query" \
-            -H "Notion-Version: 2022-06-28" \
-            -H "Authorization: Bearer ${NOTION_TOKEN}" \
-            -H "Content-Type: application/json" \
-            -d "$QUERY_JSON")
-          PAGE_ID=$(echo "$QUERY_RESPONSE" | jq -r '.results[0].id // empty')
-
-          if [ -z "$PAGE_ID" ]; then
-            echo "노션에서 이슈 #${ISSUE_NUMBER}에 해당하는 행을 찾을 수 없습니다. skip합니다."
-            exit 0
-          fi
-          echo "노션 페이지 ID: ${PAGE_ID}"
-
-          CURRENT_STATUS=$(echo "$QUERY_RESPONSE" | jq -r '.results[0].properties["상태"].status.name // empty')
-          echo "현재 노션 상태: ${CURRENT_STATUS}"
-
-          # reopened: 취소됨 상태일 때만 시작전으로
-          if [ "$HANDLE_REOPEN" = "true" ]; then
-            if [ "${CURRENT_STATUS}" != "취소됨" ]; then
-              echo "현재 상태가 '취소됨'이 아니므로 skip합니다."
-              exit 0
-            fi
-            NEW_STATUS="시작전"
-
-          # completed: 이미 완료면 skip, 아니면 완료로
-          elif [ "${STATE_REASON}" = "completed" ]; then
-            if [ "${CURRENT_STATUS}" = "완료" ]; then
-              echo "이미 완료 상태입니다. skip합니다."
-              exit 0
-            fi
-            NEW_STATUS="완료"
-
-          # not_planned: 취소됨으로
-          else
-            NEW_STATUS="취소됨"
-          fi
-
-          echo "노션 상태를 '${NEW_STATUS}'로 업데이트합니다."
-          PATCH_JSON=$(jq -n \
-            --arg status "$NEW_STATUS" \
-            '{
-              properties: {
-                "상태": { status: { name: $status } }
+              newStatus = "시작전";
+            } else if (stateReason === "completed") {
+              if (currentStatus === "완료") {
+                console.log("이미 완료 상태입니다. skip합니다.");
+                return;
               }
-            }')
-          HTTP_CODE=$(curl -sS -o /tmp/notion_patch.json -w "%{http_code}" \
-            -X PATCH "https://api.notion.com/v1/pages/${PAGE_ID}" \
-            -H "Notion-Version: 2022-06-28" \
-            -H "Authorization: Bearer ${NOTION_TOKEN}" \
-            -H "Content-Type: application/json" \
-            -d "$PATCH_JSON")
-          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
-            echo "Notion API failed with HTTP $HTTP_CODE"
-            cat /tmp/notion_patch.json
-            exit 1
-          fi
-          echo "✅ 노션 상태 업데이트 완료: ${NEW_STATUS}"
-          cat /tmp/notion_patch.json
+              newStatus = "완료";
+            } else {
+              newStatus = "취소됨";
+            }
+
+            console.log(`노션 상태를 "${newStatus}"로 업데이트합니다.`);
+
+            const patchRes = await fetch(`https://api.notion.com/v1/pages/${pageId}`, {
+              method: "PATCH",
+              headers: {
+                "Authorization": `Bearer ${token}`,
+                "Notion-Version": "2022-06-28",
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({
+                properties: {
+                  "상태": { status: { name: newStatus } }
+                }
+              })
+            });
+
+            const patchData = await patchRes.json();
+            if (!patchRes.ok) {
+              console.error("❌ 노션 상태 업데이트 실패:", JSON.stringify(patchData, null, 2));
+              process.exit(1);
+            }
+
+            console.log(`✅ 노션 상태 업데이트 완료: ${newStatus}`);
+          }
+
+          run().catch(err => {
+            console.error("실행 오류:", err);
+            process.exit(1);
+          });
+          '
