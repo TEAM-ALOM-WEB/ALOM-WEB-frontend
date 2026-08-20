@@ -21,7 +21,7 @@ export const NAV_ITEMS: NavItem[] = [
     description: "함께 성장하는 ALOM 부원들",
   },
   {
-    label: "FAQ",
+    label: "자주 묻는 질문",
     href: "/faq",
     description: "자주 묻는 질문 및 안내",
   },
