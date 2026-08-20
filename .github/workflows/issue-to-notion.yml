@@ -1,0 +1,149 @@
+# GitHub Issue가 생성될 때 Notion DB에 새 일감을 자동으로 생성합니다.
+#
+#  이슈 생성 (issues.opened)
+#      └→ [시작전] 일감 생성        (issue-to-notion.yml ← 이 파일)
+#
+# GitHub Secrets: NOTION_API_KEY, NOTION_DATABASE_ID
+
+name: Create Notion page on issue opened
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: read
+
+jobs:
+  create-notion-page:
+    name: Create Notion task
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create page in Notion database
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_API_KEY }}
+          NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+          ISSUE_URL: ${{ github.event.issue.html_url }}
+        run: |
+          set -euo pipefail
+          echo "새 이슈 생성됨: #${ISSUE_NUMBER} ${ISSUE_TITLE}"
+
+          # 이슈 제목에서 타입(Feat, Fix, Chore, Docs, Refactor) 추출
+          UPPER_TITLE=$(echo "${ISSUE_TITLE}" | tr '[:lower:]' '[:upper:]')
+          ISSUE_TYPE=""
+          if [[ "${UPPER_TITLE}" =~ ^\[FEAT\] ]]; then
+            ISSUE_TYPE="Feat"
+          elif [[ "${UPPER_TITLE}" =~ ^\[FIX\] ]]; then
+            ISSUE_TYPE="Fix"
+          elif [[ "${UPPER_TITLE}" =~ ^\[CHORE\] ]]; then
+            ISSUE_TYPE="Chore"
+          elif [[ "${UPPER_TITLE}" =~ ^\[DOCS\] ]]; then
+            ISSUE_TYPE="Docs"
+          elif [[ "${UPPER_TITLE}" =~ ^\[REFACTOR\] ]]; then
+            ISSUE_TYPE="Refactor"
+          fi
+
+          echo "추출된 타입: ${ISSUE_TYPE:-없음}"
+
+          # 노션 페이지 생성 페이로드 구성
+          if [ -n "${ISSUE_TYPE}" ]; then
+            PAYLOAD=$(jq -n \
+              --arg db_id "$NOTION_DATABASE_ID" \
+              --arg title "$ISSUE_TITLE" \
+              --argjson number "$ISSUE_NUMBER" \
+              --arg url "$ISSUE_URL" \
+              --arg itype "$ISSUE_TYPE" \
+              '{
+                parent: { database_id: $db_id },
+                properties: {
+                  "이름": {
+                    title: [{ text: { content: $title } }]
+                  },
+                  "Github 이슈 번호": {
+                    number: $number
+                  },
+                  "이슈 링크": {
+                    url: $url
+                  },
+                  "상태": {
+                    status: { name: "시작전" }
+                  },
+                  "타입": {
+                    select: { name: $itype }
+                  }
+                }
+              }')
+          else
+            PAYLOAD=$(jq -n \
+              --arg db_id "$NOTION_DATABASE_ID" \
+              --arg title "$ISSUE_TITLE" \
+              --argjson number "$ISSUE_NUMBER" \
+              --arg url "$ISSUE_URL" \
+              '{
+                parent: { database_id: $db_id },
+                properties: {
+                  "이름": {
+                    title: [{ text: { content: $title } }]
+                  },
+                  "Github 이슈 번호": {
+                    number: $number
+                  },
+                  "이슈 링크": {
+                    url: $url
+                  },
+                  "상태": {
+                    status: { name: "시작전" }
+                  }
+                }
+              }')
+          fi
+
+          HTTP_CODE=$(curl -sS -o /tmp/notion_create.json -w "%{http_code}" \
+            -X POST "https://api.notion.com/v1/pages" \
+            -H "Authorization: Bearer ${NOTION_TOKEN}" \
+            -H "Notion-Version: 2022-06-28" \
+            -H "Content-Type: application/json" \
+            -d "$PAYLOAD")
+
+          if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+            echo "Notion API failed with HTTP $HTTP_CODE"
+            cat /tmp/notion_create.json
+
+            # 혹시 "타입" 속성이 노션 DB에 없어 실패한 경우 타입 제외하고 재시도
+            if grep -q "타입" /tmp/notion_create.json; then
+              echo "타입 속성 제외 후 재시도합니다..."
+              FALLBACK_PAYLOAD=$(jq -n \
+                --arg db_id "$NOTION_DATABASE_ID" \
+                --arg title "$ISSUE_TITLE" \
+                --argjson number "$ISSUE_NUMBER" \
+                --arg url "$ISSUE_URL" \
+                '{
+                  parent: { database_id: $db_id },
+                  properties: {
+                    "이름": { title: [{ text: { content: $title } }] },
+                    "Github 이슈 번호": { number: $number },
+                    "이슈 링크": { url: $url },
+                    "상태": { status: { name: "시작전" } }
+                  }
+                }')
+              HTTP_CODE=$(curl -sS -o /tmp/notion_create_retry.json -w "%{http_code}" \
+                -X POST "https://api.notion.com/v1/pages" \
+                -H "Authorization: Bearer ${NOTION_TOKEN}" \
+                -H "Notion-Version: 2022-06-28" \
+                -H "Content-Type: application/json" \
+                -d "$FALLBACK_PAYLOAD")
+
+              if [ "$HTTP_CODE" -lt 200 ] || [ "$HTTP_CODE" -ge 300 ]; then
+                echo "재시도 실패 (HTTP $HTTP_CODE):"
+                cat /tmp/notion_create_retry.json
+                exit 1
+              fi
+            else
+              exit 1
+            fi
+          fi
+
+          echo "노션 일감 생성 완료 (상태: 시작전)"
+          cat /tmp/notion_create.json || cat /tmp/notion_create_retry.json

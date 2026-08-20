@@ -85,9 +85,51 @@ Next.js App Router 표준 및 절대 경로 별칭(`@/*`)을 사용합니다:
   - `feat`, `fix`, `style`, `refactor`, `docs`, `chore`, `test`
 - **Testing:** Jest / React Testing Library를 통한 컴포넌트 렌더링 및 폼 인터랙션 검증.
 
-## 6. Development Workflow
+## 6. Development Workflow & Pipeline
 
-- **Git Flow:** `main` (Production) ← `develop` (Staging) ← `feat/기능-이름`
+### 6.1 Naming Conventions (네이밍 규칙)
+
+- **이슈 제목:** `[타입] 작업 내용`
+  - 예시: `[Feat] 커리큘럼 로드맵 UI 구현`, `[Fix] 모바일 햄버거 메뉴 닫힘 오류 수정`, `[Chore] ESLint 설정 추가`
+  - 지원 타입: `Feat` (새 기능), `Fix` (버그 수정), `Chore` (설정/의존성), `Docs` (문서), `Refactor` (리팩토링)
+- **브랜치명:** `타입/이슈번호-작업-내용` (소문자 + 하이픈, 이슈번호 필수)
+  - 예시: `feat/12-curriculum-roadmap`, `fix/34-mobile-menu-close`, `chore/5-eslint-setup`
+- **PR 제목:** `[타입] 작업 내용 (#이슈번호)`
+  - 예시: `[Feat] 커리큘럼 로드맵 UI 구현 (#12)`
+  - PR 본문 첫 줄에 `Closes #이슈번호`를 필수로 포함하여 이슈 자동 연결 및 노션 연동 트리거.
+
+### 6.2 Step-by-Step Pipeline (개발 워크플로우)
+
+```
+이슈 생성 → Notion 일감 자동 등록(시작전) → 브랜치 생성 → 개발 & 커밋 → Draft PR(리뷰중) → CI / CodeRabbit 검사 → 팀원 리뷰(Approve) → 머지(완료)
+```
+
+1. **이슈 생성:** GitHub Issues 템플릿(`Feature Request` / `Bug Report`)으로 이슈 생성 ➔ Notion에 일감 자동 생성 (`상태: 시작전`).
+2. **브랜치 생성:** 이슈 번호를 포함한 브랜치 생성 (`feat/이슈번호-작업명`).
+3. **개발 & 커밋:**
+   - 작업 시작 전 Notion 일감의 담당자, 마감일 설정 및 `상태: 진행중`으로 변경.
+   - Conventional Commits 형식 준수 (`feat: 설명 (#이슈번호)`).
+4. **PR 생성:**
+   - PR 본문에 `Closes #이슈번호` 필수 포함.
+   - PR 생성 시 Notion 일감 상태가 `리뷰중`으로 자동 변경되고 PR 링크가 기록됨.
+   - PR 생성 즉시 CI 검사(`npm run lint`, `npx tsc --noEmit`) 및 CodeRabbit Auto Review 실행.
+5. **코드 리뷰:** 팀원 최소 1명 이상의 Approve 확인.
+6. **머지 (Merge):**
+   - PR이 `main` 또는 `develop`에 머지되면 Notion 일감 상태가 자동으로 `완료`로 변경되고 연결된 GitHub 이슈가 닫힘.
+
+### 6.3 Notion 일감 상태 자동화 매핑
+
+| GitHub 이벤트 | 트리거 워크플로우 | Notion 상태 변화 |
+| :--- | :--- | :--- |
+| **이슈 생성** (`issues.opened`) | `issue-to-notion.yml` | 일감 자동 생성 (`시작전`) |
+| **작업 시작 전** | *(수동)* | `진행중` (담당자, 마감일 입력) |
+| **PR 오픈** (`pull_request.opened`, Draft 포함) | `pr-update-notion.yml` | `리뷰중` + PR 링크 추가 |
+| **PR 머지** (`pull_request.closed` & merged) | `pr-merged-notion.yml` | `완료` + 이슈 자동 Close |
+| **이슈 취소** (`issues.closed` as not_planned) | `issue-closed-notion.yml`| `취소됨` |
+| **이슈 재오픈** (`issues.reopened`) | `issue-closed-notion.yml`| `시작전` |
+
+### 6.4 Git Flow & Environment Variables
+- **Git Flow:** `main` (Production) ← `develop` (Staging) ← `feat/이슈번호-기능-이름`
 - **Default Branch:** `main`
 - **Environment Variables:**
   - 구글 폼 링크, 지원서 URL, 외부 API 키 등은 `.env.local` 및 환경변수(`NEXT_PUBLIC_`)로 안전하게 관리.
