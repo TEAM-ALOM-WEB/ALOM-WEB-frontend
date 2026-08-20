@@ -4,7 +4,7 @@ export default function CurriculumSection() {
   return (
     <section
       id="curriculum"
-      className="relative w-full py-28 sm:py-36 lg:py-44 bg-[#08090d] text-white px-4 sm:px-6 lg:px-10 border-t border-white/5"
+      className="relative w-full py-28 sm:py-36 lg:py-44 bg-[#08090d] text-white px-4 sm:px-6 lg:px-10 border-t border-white/5 overflow-hidden"
     >
       {/* 배경 은은한 조명 포인트 */}
       <div
@@ -29,18 +29,18 @@ export default function CurriculumSection() {
           </p>
         </div>
 
-        {/* 2. 2열 커리큘럼 카드 그리드 (주니어반 / 시니어반 - 확장된 크기) */}
+        {/* 2. 2열 커리큘럼 카드 그리드 (주니어반 / 시니어반) */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
           {CURRICULUM_DATA.tracks.map((track) => (
             <div
               key={track.badge}
-              className={`relative flex flex-col justify-between p-8 sm:p-12 lg:p-14 rounded-3xl border border-white/10 bg-[#0e1017]/85 backdrop-blur-md transition-all duration-300 ${track.borderHoverClass} hover:shadow-2xl hover:shadow-black/60 group`}
+              className={`relative flex flex-col justify-between p-8 sm:p-12 lg:p-14 rounded-3xl border border-white/10 bg-[#0e1017]/85 backdrop-blur-md transition-all duration-300 hover:-translate-y-1.5 ${track.borderHoverClass} hover:shadow-2xl hover:shadow-black/70 group`}
             >
               <div>
                 {/* 카드 상단 뱃지 */}
                 <div className="flex items-center justify-between mb-6">
                   <span
-                    className={`px-4 py-1.5 rounded-lg text-xs sm:text-sm font-bold tracking-wider ${track.badgeClass}`}
+                    className={`px-4 py-1.5 rounded-lg text-xs sm:text-sm font-bold tracking-wider transition-transform duration-300 group-hover:scale-105 ${track.badgeClass}`}
                   >
                     {track.badge}
                   </span>
@@ -53,17 +53,17 @@ export default function CurriculumSection() {
                   {track.description}
                 </p>
 
-                {/* 과목 리스트 (확장된 패딩과 텍스트 크기) */}
+                {/* 과목 리스트 (아이템별 호버 애니메이션) */}
                 <ul className="space-y-3.5 sm:space-y-4">
                   {track.items.map((item) => (
                     <li
                       key={item.num}
-                      className="flex items-center gap-4 sm:gap-5 p-4 sm:p-5 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.07] hover:border-white/15 transition-all duration-200"
+                      className="group/item flex items-center gap-4 sm:gap-5 p-4 sm:p-5 rounded-2xl bg-white/[0.03] border border-white/5 hover:bg-white/[0.08] hover:border-white/20 hover:translate-x-1.5 transition-all duration-200"
                     >
-                      <span className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center font-mono text-sm sm:text-base font-bold text-neutral-300 shrink-0">
+                      <span className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center font-mono text-sm sm:text-base font-bold text-neutral-300 group-hover/item:text-white group-hover/item:border-white/30 group-hover/item:bg-white/10 transition-all duration-200 shrink-0">
                         {item.num}
                       </span>
-                      <span className="text-base sm:text-lg lg:text-xl font-semibold text-neutral-200 group-hover:text-white">
+                      <span className="text-base sm:text-lg lg:text-xl font-semibold text-neutral-200 group-hover/item:text-white transition-colors">
                         {item.title}
                       </span>
                     </li>
