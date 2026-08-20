@@ -106,6 +106,17 @@ body {
   }
 }
 
+/* 무한 롤링 마퀴 슬라이더 */
+@keyframes marquee {
+  0% {
+    transform: translateX(0%);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
 .animate-fade-in-up {
   animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
@@ -130,4 +141,14 @@ body {
 .animate-text-gradient {
   background-size: 300% 300%;
   animation: textGradientFlow 4s ease infinite;
+}
+
+.animate-marquee {
+  display: flex;
+  width: max-content;
+  animation: marquee 35s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
 }
