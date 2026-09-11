@@ -5,8 +5,8 @@ import {
   HeartHandshake,
   Compass,
   BookOpenCheck,
-  Presentation,
   Trophy,
+  Tent,
   ArrowRight,
   Sparkles,
 } from "lucide-react";
@@ -16,8 +16,8 @@ const ICON_MAP = {
   HeartHandshake: HeartHandshake,
   Compass: Compass,
   BookOpenCheck: BookOpenCheck,
-  Presentation: Presentation,
   Trophy: Trophy,
+  Tent: Tent,
 };
 
 export default function ActivitiesSection() {
