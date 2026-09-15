@@ -1,14 +1,14 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import {
   HeartHandshake,
   Compass,
   BookOpenCheck,
-  Presentation,
   Trophy,
+  Tent,
   ArrowRight,
-  Sparkles,
 } from "lucide-react";
 import { ACTIVITIES_DATA, ActivityItem } from "@/constants/activities";
 
@@ -16,14 +16,59 @@ const ICON_MAP = {
   HeartHandshake: HeartHandshake,
   Compass: Compass,
   BookOpenCheck: BookOpenCheck,
-  Presentation: Presentation,
   Trophy: Trophy,
+  Tent: Tent,
 };
+
+// 배경 사진 자동 전환 간격 (ms)
+const SLIDE_INTERVAL = 4000;
+// 좌측 목록을 마우스가 스쳐 지나갈 때 다른 활동 사진이 잠깐 끼어드는 것을 막기 위한 호버 디바운스 (ms)
+const HOVER_SELECT_DELAY = 150;
 
 export default function ActivitiesSection() {
   const [activeIndex, setActiveIndex] = useState(0);
   const activeItem: ActivityItem = ACTIVITIES_DATA.items[activeIndex];
   const ActiveIcon = ICON_MAP[activeItem.iconName];
+
+  // 우측 프리뷰 카드 배경에서 자동으로 넘어가는 사진의 현재 인덱스
+  const [bgIndex, setBgIndex] = useState(0);
+  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleSelectActivity = (index: number) => {
+    // 이미 선택된 활동이면 상태를 건드리지 않아 슬라이드쇼가 끊기지 않도록 함
+    if (index === activeIndex) return;
+    setActiveIndex(index);
+    setBgIndex(0);
+  };
+
+  const handleHoverActivity = (index: number) => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    // 마우스가 목록을 훑고 지나가는 중에는 선택하지 않고, 잠시 머무를 때만 전환
+    hoverTimeoutRef.current = setTimeout(() => {
+      handleSelectActivity(index);
+    }, HOVER_SELECT_DELAY);
+  };
+
+  const handleHoverLeaveList = () => {
+    if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+    };
+  }, []);
+
+  // 활성 활동이 바뀌어도 마우스를 계속 올려두고 있는 것과 무관하게 일정 주기로 다음 사진으로 자연스럽게 전환
+  useEffect(() => {
+    if (activeItem.images.length <= 1) return;
+
+    const timer = setInterval(() => {
+      setBgIndex((prev) => (prev + 1) % activeItem.images.length);
+    }, SLIDE_INTERVAL);
+
+    return () => clearInterval(timer);
+  }, [activeItem.images.length, activeIndex]);
 
   return (
     <section
@@ -56,7 +101,10 @@ export default function ActivitiesSection() {
         {/* 2. 인터랙티브 활동 쇼케이스 (좌측 리스트 + 우측 대형 프리뷰 카드) */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-stretch">
           {/* 좌측 활동 선택 리스트 (5열) */}
-          <div className="lg:col-span-5 flex flex-col gap-3 sm:gap-4">
+          <div
+            className="lg:col-span-5 flex flex-col gap-3 sm:gap-4"
+            onMouseLeave={handleHoverLeaveList}
+          >
             {ACTIVITIES_DATA.items.map((item, index) => {
               const Icon = ICON_MAP[item.iconName];
               const isActive = activeIndex === index;
@@ -65,8 +113,8 @@ export default function ActivitiesSection() {
                 <button
                   key={item.id}
                   type="button"
-                  onClick={() => setActiveIndex(index)}
-                  onMouseEnter={() => setActiveIndex(index)}
+                  onClick={() => handleSelectActivity(index)}
+                  onMouseEnter={() => handleHoverActivity(index)}
                   className={`group relative flex items-center justify-between p-4 sm:p-5 rounded-2xl border text-left transition-all duration-300 cursor-pointer overflow-hidden ${
                     isActive
                       ? "bg-white/[0.09] border-white/25 shadow-xl shadow-black/50 translate-x-1 sm:translate-x-2"
@@ -119,24 +167,42 @@ export default function ActivitiesSection() {
 
           {/* 우측 활성화된 활동 상세 프리뷰 카드 (7열 - 전환 애니메이션 포함) */}
           <div className="lg:col-span-7 flex flex-col justify-between p-8 sm:p-12 lg:p-14 rounded-3xl border border-white/15 bg-[#0e1017]/90 backdrop-blur-xl shadow-2xl relative overflow-hidden group">
-            {/* 내부 은은한 앰비언트 글로우 */}
-            <div className="absolute -top-24 -right-24 w-72 h-72 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none transition-all duration-700 group-hover:scale-125" />
-            <div className="absolute -bottom-24 -left-24 w-72 h-72 rounded-full bg-purple-500/10 blur-3xl pointer-events-none transition-all duration-700 group-hover:scale-125" />
+            {/* 활동 사진이 은은하게 계속 자동으로 넘어가는 배경 슬라이드쇼 (z-0: 콘텐츠보다 뒤에 위치) */}
+            <div className="absolute inset-0 z-0" aria-hidden="true">
+              {activeItem.images.map((src, index) => (
+                <div
+                  key={src}
+                  className={`absolute inset-0 transition-opacity duration-[1500ms] ease-in-out ${
+                    index === bgIndex ? "opacity-30" : "opacity-0"
+                  }`}
+                >
+                  <Image
+                    src={src}
+                    alt=""
+                    fill
+                    sizes="(max-width: 1024px) 100vw, 60vw"
+                    className="object-cover"
+                    priority={index === 0}
+                  />
+                </div>
+              ))}
+              <div className="absolute inset-0 bg-gradient-to-t from-[#0e1017]/90 via-[#0e1017]/50 to-[#0e1017]/30" />
+            </div>
 
-            {/* 카드 내용 (activeItem 변경 시 부드러운 전환) */}
+            {/* 내부 은은한 앰비언트 글로우 */}
+            <div className="absolute -top-24 -right-24 z-0 w-72 h-72 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none transition-all duration-700 group-hover:scale-125" />
+            <div className="absolute -bottom-24 -left-24 z-0 w-72 h-72 rounded-full bg-purple-500/10 blur-3xl pointer-events-none transition-all duration-700 group-hover:scale-125" />
+
+            {/* 카드 내용 (activeItem 변경 시 부드러운 전환, z-10: 배경 사진/글로우보다 항상 위에) */}
             <div
               key={activeItem.id}
-              className="flex flex-col justify-between h-full animate-fade-in-up"
+              className="relative z-10 flex flex-col justify-between h-full animate-fade-in-up"
             >
               <div>
-                {/* 상단 뱃지 & 대형 아이콘 */}
-                <div className="flex items-center justify-between mb-8">
+                {/* 상단 대형 아이콘 */}
+                <div className="mb-8">
                   <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white shadow-inner transition-transform duration-500 hover:scale-110 hover:rotate-3">
                     <ActiveIcon className="w-8 h-8 sm:w-10 sm:h-10" />
-                  </div>
-                  <div className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-white/10 bg-white/5 text-xs font-semibold tracking-wider text-neutral-300">
-                    <Sparkles className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
-                    <span>ALOM ACTIVITY</span>
                   </div>
                 </div>
 
@@ -160,7 +226,7 @@ export default function ActivitiesSection() {
                   {activeItem.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs sm:text-sm font-medium text-neutral-300 hover:border-white/25 hover:bg-white/10 hover:text-white transition-all duration-200 cursor-default"
+                      className="px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs sm:text-sm font-medium text-neutral-300 hover:border-white/25 hover:bg-white/10 hover:text-white transition-all duration-200"
                     >
                       #{tag}
                     </span>

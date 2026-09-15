@@ -134,12 +134,13 @@ export const CURRICULUM_DATA: {
   season: "2026학년도 2학기",
   eyebrow: "CURRICULUM",
   title: "2026학년도 2학기 커리큘럼",
-  description: "기초부터 실전 심화 및 팀 프로젝트까지 체계적인 로드맵을 제공합니다.",
+  description:
+    "기초부터 실전 프로젝트까지, 체계적인 로드맵으로 이어지는 커리큘럼입니다.",
   tracks: [
     {
       badge: "JUNIOR",
       title: "주니어반",
-      description: "개발의 첫걸음을 함께 시작해요",
+      description: "선배가 옆에서 함께 걸어주는, 개발의 첫걸음",
       badgeClass: "bg-cyan-950/80 text-cyan-400 border border-cyan-800/60",
       borderHoverClass: "hover:border-cyan-500/40",
       items: [
@@ -152,7 +153,7 @@ export const CURRICULUM_DATA: {
     {
       badge: "SENIOR",
       title: "시니어반",
-      description: "실전 기술과 팀 프로젝트로 완성해요",
+      description: "자율과 몰입으로 완성하는 실전형 성장",
       badgeClass: "bg-purple-950/80 text-purple-400 border border-purple-800/60",
       borderHoverClass: "hover:border-purple-500/40",
       items: [

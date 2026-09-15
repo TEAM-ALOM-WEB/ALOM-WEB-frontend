@@ -1,10 +1,12 @@
 export interface ActivityItem {
   id: string;
-  iconName: "HeartHandshake" | "Compass" | "BookOpenCheck" | "Presentation" | "Trophy";
+  iconName: "BookOpenCheck" | "Trophy" | "HeartHandshake" | "Compass" | "Tent";
   title: string;
   subtitle: string;
   description: string;
   tags: string[];
+  /** 우측 프리뷰 카드 배경에서 자동으로 넘어가며 보여줄 활동 사진들 */
+  images: string[];
   color: string;
 }
 
@@ -15,58 +17,90 @@ export const ACTIVITIES_DATA: {
   items: ActivityItem[];
 } = {
   eyebrow: "ACTIVITIES",
-  title: "아롬의 활동",
-  description: "선후배 간의 밀착 네트워킹부터 실전 프로젝트, 대외 해커톤까지 함께 성장합니다.",
+  title: "아롬에서 보내는 하루하루",
+  description:
+    "배움의 방식부터 우정을 쌓는 방식까지, 아롬만의 색깔이 담긴 활동을 소개합니다.",
   items: [
+    {
+      id: "mentoring-study",
+      iconName: "BookOpenCheck",
+      title: "멘토멘티 & 스터디",
+      subtitle: "과목마다 다른, 가장 잘 맞는 학습법",
+      description:
+        "C언어 기초·고급 C언어·파이썬은 선배가 1:1로 봐주는 멘토멘티로, 나머지 과목은 팀원들이 함께 진행하는 자율 스터디로 운영돼요.",
+      tags: ["멘토멘티", "자율 스터디"],
+      images: [
+        "/images/activities/mentoring-study/study-1.jpg",
+        "/images/activities/mentoring-study/study-2.jpg",
+        "/images/activities/mentoring-study/study-3.jpg",
+        "/images/activities/mentoring-study/study-4.jpg",
+      ],
+      color: "cyan",
+    },
+    {
+      id: "project-demoday",
+      iconName: "Trophy",
+      title: "프로젝트 & 데모데이",
+      subtitle: "기획 → 중간 → 최종, 완성되는 프로젝트",
+      description:
+        "기획·중간·최종 3단계로 프로젝트를 완성하고, 종강총회와 함께 열리는 데모데이에서 시연과 피드백, 우수팀 시상까지 진행해요.",
+      tags: ["단계별 진행", "데모데이", "우수팀 시상"],
+      images: [
+        "/images/activities/project-demoday/demoday-1.jpg",
+        "/images/activities/project-demoday/demoday-2.jpg",
+      ],
+      color: "amber",
+    },
     {
       id: "arom-darom",
       iconName: "HeartHandshake",
       title: "아롬다롬",
-      subtitle: "선후배 1:1 짝매칭 네트워킹",
+      subtitle: "정해진 형식 없는 번개모임",
       description:
-        "후배(아롬)와 선배(다롬)가 짝을 이루어 학기 내내 소통합니다. 전공 공부부터 진로 고민까지, 편하게 물어보고 함께 답을 찾아가는 시간이에요.",
-      tags: ["선후배 멘토링", "진로 상담", "네트워킹"],
-      color: "cyan",
-    },
-    {
-      id: "mentor-mentee",
-      iconName: "Compass",
-      title: "멘토멘티",
-      subtitle: "실무 역량 중심 맞춤 코칭",
-      description:
-        "실력 있는 멘토가 멘티들을 코칭합니다. 막막했던 개념도 눈높이에 맞는 설명과 코드 리뷰로 확실하게 내 것으로 만들 수 있어요.",
-      tags: ["코드 리뷰", "기술 코칭", "피드백"],
+        '신청자 채팅방에서 누구든 자유롭게 모임을 제안하는 번개모임이에요. "한강 갈 사람!" 한마디면 그날의 만남이 시작돼요.',
+      tags: ["번개모임", "자유 참여"],
+      images: [
+        "/images/activities/arom-darom/alomdalom-1.jpg",
+        "/images/activities/arom-darom/alomdalom-2.jpg",
+      ],
       color: "purple",
     },
     {
-      id: "study",
-      iconName: "BookOpenCheck",
-      title: "스터디",
-      subtitle: "트랙별 자율 심화 스터디",
+      id: "clubs",
+      iconName: "Compass",
+      title: "소모임",
+      subtitle: "취향으로 뭉치는 아롬인들",
       description:
-        "같은 목표를 가진 부원들이 모여 자율적으로 학습합니다. 혼자라면 미뤘을 공부도 함께라면 끝까지 해낼 수 있어요.",
-      tags: ["기술 스터디", "CS 기초", "알고리즘"],
+        "클라이밍(아로밍), 테니스(NET워크), 음악(귤락), 게임(아로므파티), 야구직관(야발롬)까지 자율로 운영돼요.",
+      tags: ["아로밍", "NET워크", "귤락", "아로므파티", "야발롬"],
+      images: [
+        "/images/activities/clubs/clubs-3.jpg",
+        "/images/activities/clubs/clubs-4.jpg",
+        "/images/activities/clubs/clubs-2.jpg",
+        "/images/activities/clubs/clubs-1.jpg",
+      ],
       color: "emerald",
     },
     {
-      id: "seminar",
-      iconName: "Presentation",
-      title: "세미나",
-      subtitle: "주간 정기 기술 발표 & 공유",
+      id: "mt-events",
+      iconName: "Tent",
+      title: "MT & 총회",
+      subtitle: "학기의 시작과 끝을 함께",
       description:
-        "최신 기술 트렌드와 실전 경험을 발표로 공유합니다. 발표자는 설명하는 힘을, 청중은 새로운 인사이트를 얻어갑니다.",
-      tags: ["기술 발표", "트렌드 공유", "인사이트"],
+        "개강총회로 시작해 동아리 MT로 추억을 쌓고, 학교 축제 부스도 함께 준비하며, 종강총회로 한 학기를 마무리해요.",
+      tags: ["개강총회", "동아리 MT", "축제 부스", "종강총회"],
+      images: [
+        "/images/activities/mt-events/mt-1.jpg",
+        "/images/activities/mt-events/mt-2.jpg",
+        "/images/activities/mt-events/mt-3.jpg",
+        "/images/activities/mt-events/mt-4.jpg",
+        "/images/activities/mt-events/mt-5.jpg",
+        "/images/activities/mt-events/mt-6.jpg",
+        "/images/activities/mt-events/mt-7.jpg",
+        "/images/activities/mt-events/mt-8.jpg",
+        "/images/activities/mt-events/mt-9.jpg",
+      ],
       color: "indigo",
-    },
-    {
-      id: "competition",
-      iconName: "Trophy",
-      title: "대외활동",
-      subtitle: "해커톤 & 공모전 팀 빌딩",
-      description:
-        "해커톤과 공모전에 팀으로 도전합니다. 아이디어를 실제 서비스로 만들어보는 짧고 굵은 몰입의 시간이에요.",
-      tags: ["해커톤", "공모전", "팀 프로젝트"],
-      color: "amber",
     },
   ],
 };
