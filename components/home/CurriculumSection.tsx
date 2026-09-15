@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 import { CURRICULUM_DATA } from "@/constants/curriculum";
 
 export default function CurriculumSection() {
@@ -27,6 +29,13 @@ export default function CurriculumSection() {
           <p className="mt-5 text-base sm:text-xl text-neutral-400 max-w-2xl mx-auto font-normal">
             {CURRICULUM_DATA.description}
           </p>
+          <Link
+            href="/curriculum"
+            className="mt-6 inline-flex items-center gap-1.5 text-sm sm:text-base font-semibold text-cyan-400 hover:text-cyan-300 transition-colors group"
+          >
+            전체 커리큘럼 로드맵 보기
+            <ArrowRight className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" />
+          </Link>
         </div>
 
         {/* 2. 2열 커리큘럼 카드 그리드 (주니어반 / 시니어반) */}

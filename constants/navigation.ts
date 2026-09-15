@@ -7,7 +7,7 @@ export interface NavItem {
 export const NAV_ITEMS: NavItem[] = [
   {
     label: "커리큘럼",
-    href: "/#curriculum",
+    href: "/curriculum",
     description: "트랙별 학습 로드맵 및 스터디",
   },
   {
