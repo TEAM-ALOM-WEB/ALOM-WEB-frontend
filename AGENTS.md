@@ -143,6 +143,7 @@ Next.js App Router 표준 및 절대 경로 별칭(`@/*`)을 사용합니다:
 - **Responsive Coding:** 고정 픽셀(px) 기반 배치를 지양하고 유연한 Tailwind 유틸리티(`w-full`, `max-w-7xl`, `mx-auto`, `grid`, `flex`, `gap-`, `px-4 sm:px-6 lg:px-8`)를 적극 활용합니다.
 - **Component Modularity:** 각 페이지(홈, 커리큘럼, 아카이브, 아롬인들, FAQ) 및 세부 섹션을 독립적인 컴포넌트로 모듈화하여 재사용 및 유지보수가 쉽도록 작성합니다.
 - **Git Safety (no commit/push):** 사용자의 명시적 요청 없이 임의로 git commit/push 명령을 실행하지 않습니다.
+- **No AI Attribution in Commits/PRs:** 커밋 메시지와 PR 본문에 `Co-Authored-By: Claude`, `Generated with Claude Code`, `Co-Authored-By: Codex` 등 AI 도구를 언급하는 어떠한 attribution 줄도 추가하지 않습니다. 이 저장소의 모든 커밋 메시지와 PR 설명은 AI 관련 문구 없이 순수하게 작업 내용만 담아 작성합니다.
 - **Plan Workflow:** 계획 파일의 작업을 하나씩 순차적으로 수행하고 완료 시 체크박스를 업데이트합니다.
 - **Commit Suggestion:** 각 작업 단위 완료 시 해당 컨벤션에 맞는 추천 커밋 메시지를 코드 블록으로 제안합니다.
 
