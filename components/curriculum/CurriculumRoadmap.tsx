@@ -248,17 +248,9 @@ export default function CurriculumRoadmap() {
             <span className="inline-flex w-fit items-center px-3 py-1 rounded-lg text-xs font-bold tracking-wider bg-white/10 text-white border border-white/20">
               {final.badge}
             </span>
-            <div className="flex items-center gap-4">
-              <span className="shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-400 to-indigo-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                {(() => {
-                  const Icon = ICON_MAP[final.iconName];
-                  return <Icon className="w-7 h-7" />;
-                })()}
-              </span>
-              <div className="min-w-0">
-                <h3 className="text-2xl font-extrabold text-white leading-tight break-keep">{final.title}</h3>
-                <p className="text-sm text-neutral-400 break-keep">{final.subtitle}</p>
-              </div>
+            <div className="min-w-0">
+              <h3 className="text-2xl font-extrabold text-white leading-tight break-keep">{final.title}</h3>
+              <p className="text-sm text-neutral-400 break-keep">{final.subtitle}</p>
             </div>
           </div>
         </div>
@@ -311,20 +303,12 @@ export default function CurriculumRoadmap() {
 
         {/* 파이널 */}
         <div className="relative rounded-3xl p-[1px] bg-gradient-to-br from-cyan-400/60 via-indigo-500/60 to-purple-500/60 transition-all duration-300 hover:-translate-y-1.5">
-          <div className="rounded-[calc(1.5rem-1px)] bg-[#0b0d13] p-7 flex items-center gap-4 shadow-2xl shadow-indigo-950/60">
-            <span className="shrink-0 w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-400 to-indigo-500 text-white flex items-center justify-center shadow-lg shadow-indigo-500/30">
-              {(() => {
-                const Icon = ICON_MAP[final.iconName];
-                return <Icon className="w-7 h-7" />;
-              })()}
+          <div className="rounded-[calc(1.5rem-1px)] bg-[#0b0d13] p-7 shadow-2xl shadow-indigo-950/60">
+            <span className="inline-block mb-1 px-3 py-1 rounded-lg text-xs font-bold tracking-wider bg-white/10 text-white border border-white/20">
+              {final.badge}
             </span>
-            <div className="min-w-0">
-              <span className="inline-block mb-1 px-3 py-1 rounded-lg text-xs font-bold tracking-wider bg-white/10 text-white border border-white/20">
-                {final.badge}
-              </span>
-              <h3 className="text-2xl font-extrabold text-white leading-tight break-keep">{final.title}</h3>
-              <p className="text-sm text-neutral-400 break-keep">{final.subtitle}</p>
-            </div>
+            <h3 className="text-2xl font-extrabold text-white leading-tight break-keep">{final.title}</h3>
+            <p className="text-sm text-neutral-400 break-keep">{final.subtitle}</p>
           </div>
         </div>
       </div>
