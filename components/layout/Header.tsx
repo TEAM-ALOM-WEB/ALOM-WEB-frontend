@@ -6,6 +6,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X } from "lucide-react";
 import { NAV_ITEMS } from "@/constants/navigation";
+import ThemeToggle from "@/components/common/ThemeToggle";
 
 export default function Header() {
   const pathname = usePathname();
@@ -88,10 +89,12 @@ export default function Header() {
                 </Link>
               );
             })}
+            <ThemeToggle />
           </nav>
 
-          {/* 3. 모바일 햄버거 버튼 */}
-          <div className="flex md:hidden items-center">
+          {/* 3. 모바일 다크모드 토글 + 햄버거 버튼 */}
+          <div className="flex md:hidden items-center gap-1">
+            <ThemeToggle />
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}

@@ -73,7 +73,7 @@ export default function ActivitiesSection() {
   return (
     <section
       id="activities"
-      className="relative w-full py-28 sm:py-36 lg:py-44 bg-[#08090d] text-white px-4 sm:px-6 lg:px-10 border-t border-white/5 overflow-hidden"
+      className="relative w-full py-28 sm:py-36 lg:py-44 bg-background text-foreground px-4 sm:px-6 lg:px-10 border-t border-foreground/5 overflow-hidden"
     >
       {/* 배경 은은한 오로라 라이트 */}
       <div
@@ -87,13 +87,13 @@ export default function ActivitiesSection() {
       <div className="max-w-7xl mx-auto">
         {/* 1. 섹션 헤더 */}
         <div className="text-center mb-16 sm:mb-24">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 text-xs sm:text-sm font-semibold tracking-widest text-neutral-300 uppercase mb-5">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-foreground/10 bg-foreground/5 text-xs sm:text-sm font-semibold tracking-widest text-foreground/70 uppercase mb-5">
             {ACTIVITIES_DATA.eyebrow}
           </div>
-          <h2 className="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white">
+          <h2 className="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-foreground">
             {ACTIVITIES_DATA.title}
           </h2>
-          <p className="mt-5 text-base sm:text-xl text-neutral-400 max-w-2xl mx-auto font-normal">
+          <p className="mt-5 text-base sm:text-xl text-foreground/55 max-w-2xl mx-auto font-normal">
             {ACTIVITIES_DATA.description}
           </p>
         </div>
@@ -117,8 +117,8 @@ export default function ActivitiesSection() {
                   onMouseEnter={() => handleHoverActivity(index)}
                   className={`group relative flex items-center justify-between p-4 sm:p-5 rounded-2xl border text-left transition-all duration-300 cursor-pointer overflow-hidden ${
                     isActive
-                      ? "bg-white/[0.09] border-white/25 shadow-xl shadow-black/50 translate-x-1 sm:translate-x-2"
-                      : "bg-[#0e1017]/60 border-white/5 hover:bg-white/[0.04] hover:border-white/10 hover:translate-x-1"
+                      ? "bg-foreground/[0.09] border-foreground/25 shadow-xl shadow-black/10 dark:shadow-black/50 translate-x-1 sm:translate-x-2"
+                      : "bg-surface/60 border-foreground/5 hover:bg-foreground/[0.04] hover:border-foreground/10 hover:translate-x-1"
                   }`}
                 >
                   {/* 활성 상태 좌측 포인트 바 */}
@@ -132,22 +132,22 @@ export default function ActivitiesSection() {
                     <div
                       className={`w-12 h-12 rounded-xl flex items-center justify-center border transition-all duration-300 ${
                         isActive
-                          ? "bg-white/15 border-white/30 text-white scale-105 shadow-md"
-                          : "bg-white/5 border-white/10 text-neutral-400 group-hover:text-neutral-200 group-hover:scale-105"
+                          ? "bg-foreground/15 border-foreground/30 text-foreground scale-105 shadow-md"
+                          : "bg-foreground/5 border-foreground/10 text-foreground/50 group-hover:text-foreground/80 group-hover:scale-105"
                       }`}
                     >
                       <Icon className="w-5 h-5 sm:w-6 sm:h-6 transition-transform duration-300 group-hover:rotate-3" />
                     </div>
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-lg sm:text-xl font-bold text-white transition-colors">
+                        <span className="text-lg sm:text-xl font-bold text-foreground transition-colors">
                           {item.title}
                         </span>
-                        <span className="text-xs font-mono text-neutral-500">
+                        <span className="text-xs font-mono text-foreground/40">
                           0{index + 1}
                         </span>
                       </div>
-                      <p className="text-xs sm:text-sm text-neutral-400 mt-0.5 font-normal">
+                      <p className="text-xs sm:text-sm text-foreground/55 mt-0.5 font-normal">
                         {item.subtitle}
                       </p>
                     </div>
@@ -156,8 +156,8 @@ export default function ActivitiesSection() {
                   <ArrowRight
                     className={`w-5 h-5 transition-all duration-300 ${
                       isActive
-                        ? "text-white translate-x-1 opacity-100"
-                        : "text-neutral-600 opacity-0 -translate-x-2 group-hover:opacity-60 group-hover:translate-x-0"
+                        ? "text-foreground translate-x-1 opacity-100"
+                        : "text-foreground/30 opacity-0 -translate-x-2 group-hover:opacity-60 group-hover:translate-x-0"
                     }`}
                   />
                 </button>
@@ -166,7 +166,7 @@ export default function ActivitiesSection() {
           </div>
 
           {/* 우측 활성화된 활동 상세 프리뷰 카드 (7열 - 전환 애니메이션 포함) */}
-          <div className="lg:col-span-7 flex flex-col justify-between p-8 sm:p-12 lg:p-14 rounded-3xl border border-white/15 bg-[#0e1017]/90 backdrop-blur-xl shadow-2xl relative overflow-hidden group">
+          <div className="lg:col-span-7 flex flex-col justify-between p-8 sm:p-12 lg:p-14 rounded-3xl border border-foreground/15 bg-surface/90 backdrop-blur-xl shadow-2xl relative overflow-hidden group">
             {/* 활동 사진이 은은하게 계속 자동으로 넘어가는 배경 슬라이드쇼 (z-0: 콘텐츠보다 뒤에 위치) */}
             <div className="absolute inset-0 z-0" aria-hidden="true">
               {activeItem.images.map((src, index) => (
@@ -186,7 +186,7 @@ export default function ActivitiesSection() {
                   />
                 </div>
               ))}
-              <div className="absolute inset-0 bg-gradient-to-t from-[#0e1017]/90 via-[#0e1017]/50 to-[#0e1017]/30" />
+              <div className="absolute inset-0 bg-gradient-to-t from-surface/90 via-surface/50 to-surface/30" />
             </div>
 
             {/* 내부 은은한 앰비언트 글로우 */}
@@ -201,32 +201,32 @@ export default function ActivitiesSection() {
               <div>
                 {/* 상단 대형 아이콘 */}
                 <div className="mb-8">
-                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center text-white shadow-inner transition-transform duration-500 hover:scale-110 hover:rotate-3">
+                  <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-foreground/10 border border-foreground/20 flex items-center justify-center text-foreground shadow-inner transition-transform duration-500 hover:scale-110 hover:rotate-3">
                     <ActiveIcon className="w-8 h-8 sm:w-10 sm:h-10" />
                   </div>
                 </div>
 
                 {/* 메인 타이틀 */}
-                <h3 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight">
+                <h3 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-foreground tracking-tight">
                   {activeItem.title}
                 </h3>
-                <p className="text-lg sm:text-xl text-neutral-300 font-medium mt-3 mb-6">
+                <p className="text-lg sm:text-xl text-foreground/70 font-medium mt-3 mb-6">
                   {activeItem.subtitle}
                 </p>
 
                 {/* 상세 설명 */}
-                <p className="text-base sm:text-lg text-neutral-400 leading-relaxed font-normal">
+                <p className="text-base sm:text-lg text-foreground/55 leading-relaxed font-normal">
                   {activeItem.description}
                 </p>
               </div>
 
               {/* 하단 태그 목록 */}
-              <div className="mt-10 pt-6 border-t border-white/10">
+              <div className="mt-10 pt-6 border-t border-foreground/10">
                 <div className="flex flex-wrap gap-2.5">
                   {activeItem.tags.map((tag) => (
                     <span
                       key={tag}
-                      className="px-3.5 py-1.5 rounded-xl bg-white/5 border border-white/10 text-xs sm:text-sm font-medium text-neutral-300 hover:border-white/25 hover:bg-white/10 hover:text-white transition-all duration-200"
+                      className="px-3.5 py-1.5 rounded-xl bg-foreground/5 border border-foreground/10 text-xs sm:text-sm font-medium text-foreground/70 hover:border-foreground/25 hover:bg-foreground/10 hover:text-foreground transition-all duration-200"
                     >
                       #{tag}
                     </span>

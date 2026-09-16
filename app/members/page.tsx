@@ -1,15 +1,18 @@
 import type { Metadata } from "next";
 import { createPageMetadata } from "@/lib/metadata";
-import { CURRICULUM_ROADMAP } from "@/constants/curriculum";
-import CurriculumRoadmap from "@/components/curriculum/CurriculumRoadmap";
+import { getMembers, groupMembersByTier } from "@/lib/members";
+import MemberTierGroup from "@/components/members/MemberTierGroup";
 
 export const metadata: Metadata = createPageMetadata({
-  title: "커리큘럼",
-  description: CURRICULUM_ROADMAP.description,
-  path: "/curriculum",
+  title: "아롬인들",
+  description: "함께 성장하는 ALOM 부원들을 소개합니다.",
+  path: "/members",
 });
 
-export default function CurriculumPage() {
+export default async function MembersPage() {
+  const members = await getMembers();
+  const tiers = groupMembersByTier(members);
+
   return (
     <section className="relative w-full pt-32 pb-28 sm:pt-40 sm:pb-36 lg:pt-48 lg:pb-44 bg-background text-foreground px-4 sm:px-6 lg:px-10 overflow-hidden">
       {/* 배경 은은한 조명 포인트 */}
@@ -25,23 +28,28 @@ export default function CurriculumPage() {
         {/* 1. 페이지 헤더 */}
         <div className="text-center mb-16 sm:mb-24">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-foreground/10 bg-foreground/5 text-xs sm:text-sm font-semibold tracking-widest text-foreground/70 uppercase mb-5">
-            {CURRICULUM_ROADMAP.eyebrow}
+            ALOM People
           </div>
           <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-foreground">
-            {CURRICULUM_ROADMAP.title}
+            아롬인들
           </h1>
           <p className="mt-5 text-base sm:text-xl text-foreground/55 max-w-2xl mx-auto font-normal">
-            {CURRICULUM_ROADMAP.description}
+            함께 성장하는 ALOM 부원들을 소개합니다.
           </p>
         </div>
 
-        {/* 2. 커리큘럼 플로우차트 */}
-        {/* overflow-x-auto는 overflow-y도 함께 clip 시키므로, 카드 hover 시 위로 뜨는 만큼 pt로 여백 확보 */}
-        <div className="overflow-x-auto pt-3 pb-4">
-          <div className="flex justify-center">
-            <CurriculumRoadmap />
+        {/* 2. 부원 목록 */}
+        {tiers.length > 0 ? (
+          <div className="flex flex-col gap-16">
+            {tiers.map((tier) => (
+              <MemberTierGroup key={tier.label} tier={tier} />
+            ))}
           </div>
-        </div>
+        ) : (
+          <p className="text-center text-foreground/55">
+            아직 등록된 부원 정보가 없습니다.
+          </p>
+        )}
       </div>
     </section>
   );
