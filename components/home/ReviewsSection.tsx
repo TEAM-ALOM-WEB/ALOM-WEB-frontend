@@ -47,7 +47,7 @@ export default function ReviewsSection() {
                 </div>
 
                 {/* 후기 인용문 */}
-                <p className="text-base sm:text-lg text-neutral-200 leading-relaxed font-medium group-hover:text-white transition-colors">
+                <p className="text-base sm:text-lg text-neutral-200 leading-relaxed font-medium break-keep group-hover:text-white transition-colors">
                   &ldquo;{review.quote}&rdquo;
                 </p>
               </div>
