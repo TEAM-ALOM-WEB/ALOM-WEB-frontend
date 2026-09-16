@@ -36,7 +36,7 @@ export default function FaqAccordionItem({ item }: { item: FaqItem }) {
         }`}
       >
         <div className="overflow-hidden">
-          <p className="px-5 pb-4 sm:px-6 sm:pb-5 text-sm sm:text-base text-foreground/60 leading-relaxed break-keep">
+          <p className="px-5 pb-4 sm:px-6 sm:pb-5 text-sm sm:text-base text-foreground leading-relaxed break-keep">
             {item.answer}
           </p>
         </div>
