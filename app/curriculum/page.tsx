@@ -11,7 +11,7 @@ export const metadata: Metadata = createPageMetadata({
 
 export default function CurriculumPage() {
   return (
-    <section className="relative w-full pt-32 pb-28 sm:pt-40 sm:pb-36 lg:pt-48 lg:pb-44 bg-[#08090d] text-white px-4 sm:px-6 lg:px-10 overflow-hidden">
+    <section className="relative w-full pt-32 pb-28 sm:pt-40 sm:pb-36 lg:pt-48 lg:pb-44 bg-background text-foreground px-4 sm:px-6 lg:px-10 overflow-hidden">
       {/* 배경 은은한 조명 포인트 */}
       <div
         className="pointer-events-none absolute inset-0 -z-10 overflow-hidden opacity-30"
@@ -24,13 +24,13 @@ export default function CurriculumPage() {
       <div className="max-w-7xl mx-auto">
         {/* 1. 페이지 헤더 */}
         <div className="text-center mb-16 sm:mb-24">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/10 bg-white/5 text-xs sm:text-sm font-semibold tracking-widest text-neutral-300 uppercase mb-5">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-foreground/10 bg-foreground/5 text-xs sm:text-sm font-semibold tracking-widest text-foreground/70 uppercase mb-5">
             {CURRICULUM_ROADMAP.eyebrow}
           </div>
-          <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-white">
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight text-foreground">
             {CURRICULUM_ROADMAP.title}
           </h1>
-          <p className="mt-5 text-base sm:text-xl text-neutral-400 max-w-2xl mx-auto font-normal">
+          <p className="mt-5 text-base sm:text-xl text-foreground/55 max-w-2xl mx-auto font-normal">
             {CURRICULUM_ROADMAP.description}
           </p>
         </div>

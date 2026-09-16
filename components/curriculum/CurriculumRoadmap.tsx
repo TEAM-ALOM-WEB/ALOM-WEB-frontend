@@ -87,11 +87,11 @@ function SubjectChip({
 }) {
   const Icon = ICON_MAP[iconName];
   return (
-    <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-white/[0.04] border border-white/10 hover:bg-white/[0.08] hover:border-cyan-500/30 transition-all duration-200">
-      <span className="shrink-0 w-8 h-8 rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/20 flex items-center justify-center">
+    <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-foreground/[0.04] border border-foreground/10 hover:bg-foreground/[0.08] hover:border-cyan-500/30 transition-all duration-200">
+      <span className="shrink-0 w-8 h-8 rounded-lg bg-cyan-500/10 text-cyan-500 dark:text-cyan-400 border border-cyan-500/20 flex items-center justify-center">
         <Icon className="w-4 h-4" />
       </span>
-      <span className="text-sm font-semibold text-neutral-200">{label}</span>
+      <span className="text-sm font-semibold text-foreground/85">{label}</span>
     </div>
   );
 }
@@ -109,14 +109,14 @@ function StepCard({
   const t = TRACK_THEME[theme];
   return (
     <div
-      className={`flex items-center gap-3 px-4 py-4 rounded-2xl bg-[#0e1017]/85 border border-white/10 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/50 ${t.border}`}
+      className={`flex items-center gap-3 px-4 py-4 rounded-2xl bg-surface/85 border border-foreground/10 backdrop-blur-md transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-black/10 dark:hover:shadow-black/50 ${t.border}`}
     >
       <span
         className={`shrink-0 w-10 h-10 rounded-xl border flex items-center justify-center ${t.iconBg}`}
       >
         <Icon className="w-5 h-5" />
       </span>
-      <span className="text-sm sm:text-base font-bold text-white break-keep leading-tight">{label}</span>
+      <span className="text-sm sm:text-base font-bold text-foreground break-keep leading-tight">{label}</span>
     </div>
   );
 }
@@ -139,7 +139,7 @@ function FanConnector({
     <div className="relative h-full w-full" aria-hidden="true">
       {/* 세로 트렁크 라인 (하나의 경로가 갈라지거나 모이는 지점) */}
       <div
-        className="absolute w-0.5 rounded-full bg-white/25"
+        className="absolute w-0.5 rounded-full bg-foreground/25"
         style={{ left: trunkX, top: ROW_CENTERS[0], bottom: `calc(100% - ${ROW_CENTERS[2]})` }}
       />
       {/* 3개 행으로 뻗는 가로 라인 + 화살표 (트랙별 테마 색상) */}
@@ -182,15 +182,15 @@ export default function CurriculumRoadmap() {
       >
         {/* 주니어반 카드 (3행 전체를 차지) */}
         <div
-          className="rounded-3xl border border-white/10 bg-[#0e1017]/85 backdrop-blur-md p-6 flex flex-col justify-center gap-4 transition-all duration-300 hover:-translate-y-1 hover:border-cyan-500/40 hover:shadow-xl hover:shadow-black/50"
+          className="rounded-3xl border border-foreground/10 bg-surface/85 backdrop-blur-md p-6 flex flex-col justify-center gap-4 transition-all duration-300 hover:-translate-y-1 hover:border-cyan-500/40 hover:shadow-xl hover:shadow-black/10 dark:hover:shadow-black/50"
           style={{ gridColumn: "1", gridRow: "1 / span 3" }}
         >
           <div>
             <span className="inline-block px-3 py-1 rounded-lg text-xs font-bold tracking-wider bg-cyan-950/80 text-cyan-400 border border-cyan-800/60">
               {junior.badge}
             </span>
-            <h3 className="mt-3 text-xl font-extrabold text-white">{junior.title}</h3>
-            <p className="text-sm text-neutral-400">{junior.subtitle}</p>
+            <h3 className="mt-3 text-xl font-extrabold text-foreground">{junior.title}</h3>
+            <p className="text-sm text-foreground/55">{junior.subtitle}</p>
           </div>
           <div className="flex flex-col gap-2">
             {junior.subjects.map((subject) => (
@@ -224,7 +224,7 @@ export default function CurriculumRoadmap() {
             className="flex items-center justify-center"
             aria-hidden="true"
           >
-            <ChevronRight className="w-6 h-6 text-white/40" />
+            <ChevronRight className="w-6 h-6 text-foreground/40" />
           </div>
         ))}
 
@@ -259,12 +259,12 @@ export default function CurriculumRoadmap() {
       {/* ===== 모바일 / 태블릿: 세로형 타임라인 ===== */}
       <div className="flex flex-col items-stretch gap-0 xl:hidden">
         {/* 주니어반 */}
-        <div className="rounded-3xl border border-white/10 bg-[#0e1017]/85 backdrop-blur-md p-6 transition-all duration-300 hover:-translate-y-1 hover:border-cyan-500/40">
+        <div className="rounded-3xl border border-foreground/10 bg-surface/85 backdrop-blur-md p-6 transition-all duration-300 hover:-translate-y-1 hover:border-cyan-500/40">
           <span className="inline-block px-3 py-1 rounded-lg text-xs font-bold tracking-wider bg-cyan-950/80 text-cyan-400 border border-cyan-800/60">
             {junior.badge}
           </span>
-          <h3 className="mt-3 text-xl font-extrabold text-white">{junior.title}</h3>
-          <p className="text-sm text-neutral-400 mb-4">{junior.subtitle}</p>
+          <h3 className="mt-3 text-xl font-extrabold text-foreground">{junior.title}</h3>
+          <p className="text-sm text-foreground/55 mb-4">{junior.subtitle}</p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
             {junior.subjects.map((subject) => (
               <SubjectChip key={subject.id} label={subject.label} iconName={subject.iconName} />
@@ -273,7 +273,7 @@ export default function CurriculumRoadmap() {
         </div>
 
         <div className="flex justify-center py-3" aria-hidden="true">
-          <ChevronDown className="w-6 h-6 text-white/30" />
+          <ChevronDown className="w-6 h-6 text-foreground/30" />
         </div>
 
         {/* 3개 트랙 */}
@@ -281,7 +281,7 @@ export default function CurriculumRoadmap() {
           {tracks.map((track) => (
             <div
               key={track.id}
-              className={`rounded-3xl border border-white/10 bg-[#0e1017]/85 backdrop-blur-md p-6 transition-all duration-300 hover:-translate-y-1 ${TRACK_THEME[track.theme].border}`}
+              className={`rounded-3xl border border-foreground/10 bg-surface/85 backdrop-blur-md p-6 transition-all duration-300 hover:-translate-y-1 ${TRACK_THEME[track.theme].border}`}
             >
               <span
                 className={`inline-block px-2.5 py-1 rounded-md text-[11px] font-bold tracking-wider ${TRACK_THEME[track.theme].badge}`}
@@ -290,7 +290,7 @@ export default function CurriculumRoadmap() {
               </span>
               <div className="mt-3 flex items-center gap-3">
                 <StepCard label={track.steps[0].label} iconName={track.steps[0].iconName} theme={track.theme} />
-                <ChevronRight className="w-5 h-5 text-white/25 shrink-0" aria-hidden="true" />
+                <ChevronRight className="w-5 h-5 text-foreground/25 shrink-0" aria-hidden="true" />
                 <StepCard label={track.steps[1].label} iconName={track.steps[1].iconName} theme={track.theme} />
               </div>
             </div>
@@ -298,7 +298,7 @@ export default function CurriculumRoadmap() {
         </div>
 
         <div className="flex justify-center py-3" aria-hidden="true">
-          <ChevronDown className="w-6 h-6 text-white/30" />
+          <ChevronDown className="w-6 h-6 text-foreground/30" />
         </div>
 
         {/* 파이널 */}

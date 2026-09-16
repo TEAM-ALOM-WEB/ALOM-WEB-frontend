@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { pretendard } from "@/app/fonts";
 import Header from "@/components/layout/Header";
+import ThemeProvider from "@/components/layout/ThemeProvider";
 
 export const metadata: Metadata = {
   title: {
@@ -39,11 +40,18 @@ export default function RootLayout({
   return (
     <html
       lang="ko"
-      className={`${pretendard.variable} h-full antialiased scroll-smooth font-sans dark`}
+      className={`${pretendard.variable} h-full antialiased scroll-smooth font-sans`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-[#08090d] text-white selection:bg-white selection:text-neutral-950">
-        <Header />
-        <main className="flex-1 flex flex-col">{children}</main>
+      <body className="min-h-full flex flex-col bg-background text-foreground selection:bg-foreground selection:text-background">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem={false}
+        >
+          <Header />
+          <main className="flex-1 flex flex-col">{children}</main>
+        </ThemeProvider>
       </body>
     </html>
   );

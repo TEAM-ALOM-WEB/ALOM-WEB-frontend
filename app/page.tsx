@@ -5,7 +5,7 @@ import ReviewsSection from "@/components/home/ReviewsSection";
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 w-full bg-[#08090d]">
+    <div className="flex flex-col flex-1 w-full bg-background">
       <HeroSection />
       <CurriculumSection />
       <ActivitiesSection />
