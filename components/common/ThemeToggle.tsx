@@ -21,7 +21,8 @@ export default function ThemeToggle({ className = "" }: { className?: string }) 
     <button
       type="button"
       onClick={() => setTheme(isDark ? "light" : "dark")}
-      className={`p-2 rounded-lg text-neutral-300 hover:text-white hover:bg-white/10 focus:outline-hidden transition-colors ${className}`}
+      className={`p-2 rounded-lg focus:outline-hidden transition-colors ${className || "text-neutral-300 hover:text-white hover:bg-white/10"
+        }`}
       aria-label={isDark ? "라이트 모드로 전환" : "다크 모드로 전환"}
     >
       {mounted ? (
