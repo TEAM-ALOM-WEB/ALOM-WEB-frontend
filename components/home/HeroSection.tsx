@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 type LetterKey = "A" | "L" | "O" | "M";
@@ -23,9 +22,26 @@ function createLetterRefMap<T>() {
   return { A: null, L: null, O: null, M: null } as Record<LetterKey, T | null>;
 }
 
+interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  radius: number;
+  baseOpacity: number;
+  twinkleSpeed: number;
+  phase: number;
+  depth: number;
+  color: string;
+}
+
+const PARTICLE_COLORS = ["255,255,255", "168,132,255", "94,234,212"];
+
 export default function HeroSection() {
   const sectionRef = useRef<HTMLElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const particlesRef = useRef<Particle[]>([]);
   const sourceRefs = useRef(createLetterRefMap<HTMLSpanElement>());
   const targetRefs = useRef(createLetterRefMap<HTMLSpanElement>());
   const flyRefs = useRef(createLetterRefMap<HTMLSpanElement>());
@@ -171,6 +187,136 @@ export default function HeroSection() {
     };
   }, []);
 
+  // 스크롤에 따라 별 입자가 화면 중앙에서 바깥으로 퍼져나가는(워프) 캔버스 파티클 배경
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas?.getContext("2d");
+    if (!canvas || !ctx) return;
+
+    let width = 0;
+    let height = 0;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+    const buildParticles = () => {
+      const density = reducedMotionRef.current ? 0.00015 : 0.00038;
+      const count = Math.round(width * height * density);
+      particlesRef.current = Array.from({ length: count }, () => {
+        const depth = Math.random() * 0.7 + 0.3;
+        const dirAngle = Math.random() * Math.PI * 2;
+        const speed = 6 + depth * 16; // px/s, 멀리 있는(작은) 입자일수록 느리게 흐름
+        return {
+          x: Math.random() * width,
+          y: Math.random() * height,
+          vx: Math.cos(dirAngle) * speed,
+          vy: Math.sin(dirAngle) * speed,
+          radius: Math.random() * 1.4 + 0.5,
+          baseOpacity: Math.random() * 0.5 + 0.35,
+          twinkleSpeed: Math.random() * 1.5 + 0.6,
+          phase: Math.random() * Math.PI * 2,
+          depth,
+          color: PARTICLE_COLORS[Math.floor(Math.random() * PARTICLE_COLORS.length)],
+        };
+      });
+    };
+
+    const resize = () => {
+      width = window.innerWidth;
+      height = window.innerHeight;
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      buildParticles();
+    };
+
+    resize();
+    window.addEventListener("resize", resize);
+
+    const drawStatic = () => {
+      ctx.clearRect(0, 0, width, height);
+      particlesRef.current.forEach((p) => {
+        ctx.beginPath();
+        ctx.fillStyle = `rgba(${p.color},${p.baseOpacity})`;
+        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    };
+
+    if (reducedMotionRef.current) {
+      drawStatic();
+      return () => window.removeEventListener("resize", resize);
+    }
+
+    let rafId = 0;
+    const startTime = performance.now();
+    let lastTime = startTime;
+    const wrapPad = 60;
+
+    const render = (now: number) => {
+      rafId = requestAnimationFrame(render);
+      const dt = Math.min((now - lastTime) / 1000, 0.05);
+      lastTime = now;
+      const elapsed = (now - startTime) / 1000;
+      const progress = progressRef.current;
+      const centerX = width / 2;
+      const centerY = height / 2;
+
+      // 스크롤을 시작하자마자 빠르게 워프가 붙고, 문구가 완성되는 구간에서 서서히 가라앉음
+      const warp = smoothstep(0, 0.4, progress) * (1 - smoothstep(0.85, 1, progress) * 0.6);
+      const fadeOut = smoothstep(0.9, 1, progress);
+      const driftBoost = 1 + warp * 5;
+
+      ctx.clearRect(0, 0, width, height);
+
+      particlesRef.current.forEach((p) => {
+        // 스크롤 여부와 무관하게 항상 은은히 흘러가고, 스크롤 중에는 흐름 자체가 가속됨
+        p.x += p.vx * dt * driftBoost;
+        p.y += p.vy * dt * driftBoost;
+        if (p.x < -wrapPad) p.x = width + wrapPad;
+        if (p.x > width + wrapPad) p.x = -wrapPad;
+        if (p.y < -wrapPad) p.y = height + wrapPad;
+        if (p.y > height + wrapPad) p.y = -wrapPad;
+
+        const dx = p.x - centerX;
+        const dy = p.y - centerY;
+        const dist = Math.hypot(dx, dy) || 1;
+        const dirX = dx / dist;
+        const dirY = dy / dist;
+        const push = warp * p.depth * 360;
+        const rx = p.x + dirX * push;
+        const ry = p.y + dirY * push;
+
+        const twinkle = p.baseOpacity * (0.6 + 0.4 * Math.sin(elapsed * p.twinkleSpeed + p.phase));
+        const alpha = Math.max(0, twinkle * (1 - fadeOut * 0.75));
+
+        if (warp > 0.04) {
+          // 워프 구간: 이동 방향으로 길게 궤적을 그려 빛의 줄기처럼 표현
+          const trailLen = push * 0.6 + warp * 70;
+          ctx.strokeStyle = `rgba(${p.color},${alpha})`;
+          ctx.lineWidth = p.radius * (1 + warp * 1.5);
+          ctx.lineCap = "round";
+          ctx.beginPath();
+          ctx.moveTo(rx - dirX * trailLen, ry - dirY * trailLen);
+          ctx.lineTo(rx, ry);
+          ctx.stroke();
+        } else {
+          ctx.beginPath();
+          ctx.fillStyle = `rgba(${p.color},${alpha})`;
+          ctx.arc(rx, ry, p.radius, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      });
+    };
+
+    rafId = requestAnimationFrame(render);
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
+
   const addRevealRef = (el: HTMLSpanElement | null, index: number) => {
     revealRefs.current[index] = el as HTMLSpanElement;
   };
@@ -181,40 +327,31 @@ export default function HeroSection() {
       className="relative w-full min-h-screen bg-[#08090d] text-white"
     >
       <div className="sticky top-0 flex h-screen w-full flex-col items-center justify-center overflow-hidden px-4 sm:px-6">
-        {/* 1. heroBg.jpg 별빛 배경 이미지 (본래 고화질 해상도 유지 및 선명한 커버) */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-          <Image
-            src="/images/heroBg.jpg"
-            alt="ALOM Hero Starry Background"
-            fill
-            priority
-            quality={100}
-            unoptimized
-            className="object-cover opacity-80"
-          />
-          {/* 상하단 및 전체 은은한 다크 그라디언트 비네팅 */}
-          <div className="absolute inset-0 bg-gradient-to-b from-[#08090d]/60 via-transparent to-[#08090d]/90" />
-        </div>
-
-        {/* 2. BOAZ 스타일 유기적 앰비언트 그라디언트 컨테이너 (bg-gradients-container) */}
+        {/* 1. 베이스 다크 캔버스 (은은한 중앙 라이트 워시가 천천히 숨쉬며 깊이감 부여, 사진 미사용) */}
         <div
-          className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center overflow-hidden [filter:blur(70px)] opacity-65"
+          className="absolute inset-0 z-0 bg-[radial-gradient(ellipse_at_50%_40%,rgba(30,32,48,0.9)_0%,#08090d_70%)] animate-aurora"
           aria-hidden="true"
-        >
-          <div className="relative w-[500px] h-[500px] sm:w-[800px] sm:h-[800px]">
-            <div className="absolute top-[calc(50%-250px)] left-[calc(50%-250px)] w-[500px] h-[500px] rounded-full bg-[radial-gradient(circle_at_center,rgba(147,51,234,0.65)_0%,rgba(147,51,234,0)_70%)] animate-move-vertical mix-blend-screen" />
-            <div className="absolute top-[calc(50%-250px)] left-[calc(50%-250px)] w-[500px] h-[500px] rounded-full bg-[radial-gradient(circle_at_center,rgba(6,182,212,0.65)_0%,rgba(6,182,212,0)_70%)] animate-move-in-circle-reverse origin-[calc(50%-250px)] mix-blend-screen" />
-            <div className="absolute top-[calc(50%-250px)] left-[calc(50%-250px)] w-[500px] h-[500px] rounded-full bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.65)_0%,rgba(99,102,241,0)_70%)] animate-move-in-circle origin-[calc(50%+250px)] mix-blend-screen" />
-            <div className="absolute top-[calc(50%-250px)] left-[calc(50%-250px)] w-[500px] h-[500px] rounded-full bg-[radial-gradient(circle_at_center,rgba(56,189,248,0.6)_0%,rgba(56,189,248,0)_70%)] animate-move-horizontal mix-blend-screen" />
-          </div>
-        </div>
+        />
 
-        {/* 3. 중앙 메인 타이포그래피 스테이지 */}
+        {/* 2. 가장자리 비네팅 (파티클보다 아래 레이어에 둬서 별이 가려지지 않게 함) */}
+        <div
+          className="pointer-events-none absolute inset-0 z-[5] bg-[radial-gradient(ellipse_at_center,transparent_45%,#08090d_92%)]"
+          aria-hidden="true"
+        />
+
+        {/* 3. 스크롤에 반응해 중앙에서 바깥으로 퍼져나가는 별 입자(파티클) 캔버스 */}
+        <canvas
+          ref={canvasRef}
+          className="pointer-events-none absolute inset-0 z-10"
+          aria-hidden="true"
+        />
+
+        {/* 4. 중앙 메인 타이포그래피 스테이지 */}
         <div
           ref={stageRef}
           className="relative z-20 flex w-full flex-col items-center text-center select-none pt-12"
         >
-          {/* 3-1. 측정 전용 ALOM 로고 배치 (항상 투명, 초기 스크롤 위치에서의 글자 좌표 기준) */}
+          {/* 4-1. 측정 전용 ALOM 로고 배치 (항상 투명, 초기 스크롤 위치에서의 글자 좌표 기준) */}
           <div
             className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-0"
             aria-hidden="true"
@@ -234,8 +371,15 @@ export default function HeroSection() {
             </div>
           </div>
 
-          {/* 3-2. 실제 최종 문구 레이아웃 (A/L/O/M은 스크롤 완료 시점에만 서서히 나타남) */}
+          {/* 4-2. 실제 최종 문구 레이아웃 (A/L/O/M은 스크롤 완료 시점에만 서서히 나타남) */}
           <h1 className="flex items-baseline justify-center flex-wrap tracking-normal text-white leading-none font-sans group">
+            <span
+              ref={(el) => addRevealRef(el, 0)}
+              className="text-2xl sm:text-4xl md:text-5xl font-semibold text-neutral-400 mr-3 sm:mr-6 md:mr-8 drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)] inline-block"
+            >
+              from
+            </span>
+
             <span className="inline-flex items-baseline">
               <span
                 ref={(el) => {
@@ -254,7 +398,7 @@ export default function HeroSection() {
                 L
               </span>
               <span
-                ref={(el) => addRevealRef(el, 0)}
+                ref={(el) => addRevealRef(el, 1)}
                 className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.8)] inline-block"
               >
                 pha
@@ -262,7 +406,7 @@ export default function HeroSection() {
             </span>
 
             <span
-              ref={(el) => addRevealRef(el, 1)}
+              ref={(el) => addRevealRef(el, 2)}
               className="text-2xl sm:text-4xl md:text-5xl font-semibold text-neutral-400 mx-3 sm:mx-6 md:mx-8 drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)] inline-block"
             >
               to
@@ -286,7 +430,7 @@ export default function HeroSection() {
                 M
               </span>
               <span
-                ref={(el) => addRevealRef(el, 2)}
+                ref={(el) => addRevealRef(el, 3)}
                 className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-tight text-white drop-shadow-[0_4px_20px_rgba(0,0,0,0.8)] inline-block"
               >
                 ega
@@ -294,7 +438,7 @@ export default function HeroSection() {
             </span>
           </h1>
 
-          {/* 3-3. 스크롤에 맞춰 날아다니는 A/L/O/M 글자 레이어 */}
+          {/* 4-3. 스크롤에 맞춰 날아다니는 A/L/O/M 글자 레이어 */}
           {ready && (
             <div
               className="pointer-events-none absolute inset-0 z-30"
@@ -322,7 +466,7 @@ export default function HeroSection() {
             </div>
           )}
 
-          {/* 4. 서브 카피 */}
+          {/* 5. 서브 카피 */}
           <p
             ref={subRef}
             className="mt-8 sm:mt-10 text-lg sm:text-2xl md:text-3xl font-medium text-neutral-200 tracking-tight drop-shadow-[0_2px_16px_rgba(0,0,0,0.9)]"
