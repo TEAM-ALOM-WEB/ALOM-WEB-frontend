@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { pretendard } from "@/app/fonts";
 import Header from "@/components/layout/Header";
-import Footer from "@/components/layout/Footer";
 import ThemeProvider from "@/components/layout/ThemeProvider";
 
 export const metadata: Metadata = {
@@ -52,7 +51,6 @@ export default function RootLayout({
         >
           <Header />
           <main className="flex-1 flex flex-col">{children}</main>
-          <Footer />
         </ThemeProvider>
       </body>
     </html>
