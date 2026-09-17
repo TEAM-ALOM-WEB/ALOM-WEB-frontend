@@ -28,6 +28,7 @@ const POSITION_RANK: Record<string, number> = {
   기획국장: 3,
   교육국장: 3,
   행정국장: 3,
+  홍보국장: 3,
   고문: 4,
   기획국원: 5,
   교육국원: 5,
@@ -41,7 +42,10 @@ function positionRank(position: string): number {
 }
 
 function byPosition(a: Member, b: Member): number {
-  return positionRank(a.position) - positionRank(b.position) || a.name.localeCompare(b.name, "ko");
+  return (
+    positionRank(a.position) - positionRank(b.position) ||
+    a.name.localeCompare(b.name, "ko")
+  );
 }
 
 export async function getMembers(): Promise<Member[]> {
@@ -84,5 +88,8 @@ export function groupMembersByTier(members: Member[]): MemberTier[] {
     }
   }
 
-  return Array.from(groups, ([label, groupMembers]) => ({ label, members: groupMembers }));
+  return Array.from(groups, ([label, groupMembers]) => ({
+    label,
+    members: groupMembers,
+  }));
 }
